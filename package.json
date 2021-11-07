@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "express": "^4.17.1",
+    "request": "^2.88.2",
+    "xml": "^1.0.1",
+    "xmlhttprequest": "^1.8.0"
+  }
+}
