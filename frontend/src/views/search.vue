@@ -61,7 +61,31 @@ export default {
                 { name: '중구구', value: 24 },
                 { name: '중랑구', value: 25 },
             ],
+            map: null,
         };
+    },
+    mounted() {
+        if (window.kakao && window.kakao.maps) {
+            this.initMap();
+        } else {
+            const script = document.createElement('script');
+            /* global kakao */
+            script.onload = () => kakao.maps.load(this.initMap);
+            script.src =
+                'http://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=be47c3ecdef469dbffe0caa036397774';
+            document.head.appendChild(script);
+        }
+    },
+    methods: {
+        initMap() {
+            var container = document.getElementById('map');
+            var options = {
+                center: new kakao.maps.LatLng(33.450701, 126.570667),
+                level: 5,
+            };
+            var map = new kakao.maps.Map(container, options);
+            map.setMapTypeId(kakao.maps.MapTypeId.LOADMAP);
+        },
     },
 };
 </script>
