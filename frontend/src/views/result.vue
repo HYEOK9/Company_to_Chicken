@@ -12,8 +12,4 @@ export default {
     background: url('../assets/backimage.jpg') no-repeat center center fixed;
     background-size: cover;
 }
-#map {
-    width: 400px;
-    height: 300px;
-}
 </style>

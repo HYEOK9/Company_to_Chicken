@@ -1,6 +1,32 @@
 <template>
     <div id="app">
-        <v-app> ></v-app>
+        <v-app>
+            <v-row align="center"
+                ><v-col cols="2"></v-col>
+                <v-col cols="3" align="center" align-self="center">
+                    <v-row align="center">
+                        <v-select
+                            height="8vh"
+                            width="auto"
+                            :items="regions"
+                            item-text="name"
+                            item-value="value"
+                            background-color="white"
+                            label="지역을 선택하세요"
+                            dense
+                            solo
+                        ></v-select
+                    ></v-row>
+                    <v-row align="center"
+                        ><v-col
+                            ><v-btn to="/search/result">결과확인</v-btn></v-col
+                        ></v-row
+                    ></v-col
+                >
+                <v-col cols="7" align="center">
+                    <div id="map"></div
+                ></v-col> </v-row
+        ></v-app>
     </div>
 </template>
 <script>
