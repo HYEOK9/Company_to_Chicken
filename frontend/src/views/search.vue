@@ -7,6 +7,7 @@
                         <v-row align="center"
                             ><v-col>
                                 <v-text-field
+                                    @keydown.enter.prevent="searchPlace"
                                     v-model="keyword"
                                     rounded
                                     height="10vh"
@@ -41,9 +42,10 @@ export default {
         return {
             map: null,
             appkey: 'be47c3ecdef469dbffe0caa036397774',
-            lat: 0,
-            lng: 0,
+            lat: 37.5666805,
+            lng: 126.9784147,
             keyword: '',
+            marker: [],
         };
     },
     mounted() {
@@ -51,12 +53,10 @@ export default {
             this.initMap();
         } else {
             const script = document.createElement('script');
-            /* global kakao */
             script.onload = () => kakao.maps.load(this.initMap);
             script.src =
                 'http://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
-                this.appkey +
-                '&libaries=services';
+                this.appkey;
             document.head.appendChild(script);
         }
     },
@@ -76,10 +76,15 @@ export default {
             });
             // 지도에 마커를 표시합니다
             marker.setMap(map);
-
+            this.marker = marker;
             // 지도에 클릭 이벤트를 등록합니다
             // 지도를 클릭하면 마지막 파라미터로 넘어온 함수를 호출합니다
+        },
+        clickMap() {
+            let map = this.map;
+            let marker = this.marker;
             let base = this;
+
             kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
                 // 클릭한 위도, 경도 정보를 가져옵니다
                 var latlng = mouseEvent.latLng;
@@ -90,6 +95,37 @@ export default {
                 base.lat = latlng.getLat();
                 base.lng = latlng.getLng();
             });
+        },
+        searchPlace() {
+            let map = this.map;
+            let ps = new kakao.maps.services.Places();
+
+            ps.keywordSearch(this.keyword, placesSearchCB);
+            let base = this;
+            function placesSearchCB(data, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    var bounds = new kakao.maps.LatLngBounds();
+                    base.lat = data[0].y;
+                    base.lng = data[0].x;
+                    for (var i = 0; i < data.length; i++) {
+                        displayMarker(data[0]);
+                        bounds.extend(
+                            new kakao.maps.LatLng(data[0].y, data[0].x)
+                        );
+                    }
+
+                    map.setBounds(bounds);
+                }
+            }
+            function displayMarker(place) {
+                base.marker.setMap(null);
+
+                let marker = new kakao.maps.Marker({
+                    map: map,
+                    position: new kakao.maps.LatLng(place.y, place.x),
+                });
+                base.marker = marker;
+            }
         },
     },
 };
