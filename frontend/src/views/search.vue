@@ -1,31 +1,36 @@
 <template>
     <div id="app">
         <v-app>
-            <v-row align="center"
-                ><v-col cols="2"></v-col>
-                <v-col cols="3" align="center" align-self="center">
-                    <v-row align="center">
-                        <v-select
-                            height="8vh"
-                            width="auto"
-                            :items="regions"
-                            item-text="name"
-                            item-value="value"
-                            background-color="white"
-                            label="지역을 선택하세요"
-                            dense
-                            solo
-                        ></v-select
-                    ></v-row>
-                    <v-row align="center"
-                        ><v-col
-                            ><v-btn to="/search/result">결과확인</v-btn></v-col
-                        ></v-row
+            <v-row align="center" justify="center">
+                <v-col cols="4" align="center" align-self="center">
+                    <v-form>
+                        <v-row align="center"
+                            ><v-col>
+                                <v-text-field
+                                    v-model="keyword"
+                                    rounded
+                                    height="10vh"
+                                    background-color="white"
+                                    label="지역 검색"
+                                    dense
+                                ></v-text-field></v-col
+                        ></v-row>
+                        <v-row align="center"
+                            ><v-col
+                                ><v-btn to="/search/result"
+                                    >결과확인</v-btn
+                                ></v-col
+                            ></v-row
+                        ></v-form
+                    ></v-col
+                ><v-col cols="1" align-self="center"
+                    ><v-btn elevation="2" @click="searchPlace"
+                        >검색</v-btn
                     ></v-col
                 >
-                <v-col cols="7" align="center">
-                    <div id="map"></div
-                ></v-col> </v-row
+                <v-col cols="5">
+                    <div id="map" @click="clickMap"></div>
+                </v-col> </v-row
         ></v-app>
     </div>
 </template>
@@ -34,34 +39,11 @@ export default {
     name: 'search',
     data() {
         return {
-            regions: [
-                { name: '강남구', value: 1 },
-                { name: '강동구', value: 2 },
-                { name: '강북구', value: 3 },
-                { name: '강서구', value: 4 },
-                { name: '관악구', value: 5 },
-                { name: '광진구', value: 6 },
-                { name: '구로구', value: 7 },
-                { name: '금천구', value: 8 },
-                { name: '노원구', value: 9 },
-                { name: '도봉구', value: 10 },
-                { name: '동대문구', value: 11 },
-                { name: '동작구', value: 12 },
-                { name: '마포구', value: 13 },
-                { name: '서대문구', value: 14 },
-                { name: '서초구', value: 15 },
-                { name: '성동구', value: 16 },
-                { name: '성북구', value: 17 },
-                { name: '송파구', value: 18 },
-                { name: '양천구', value: 19 },
-                { name: '영등포구', value: 20 },
-                { name: '용산구', value: 21 },
-                { name: '은평구', value: 22 },
-                { name: '종로구', value: 23 },
-                { name: '중구구', value: 24 },
-                { name: '중랑구', value: 25 },
-            ],
             map: null,
+            appkey: 'be47c3ecdef469dbffe0caa036397774',
+            lat: 0,
+            lng: 0,
+            keyword: '',
         };
     },
     mounted() {
@@ -72,7 +54,9 @@ export default {
             /* global kakao */
             script.onload = () => kakao.maps.load(this.initMap);
             script.src =
-                'http://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=be47c3ecdef469dbffe0caa036397774';
+                'http://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
+                this.appkey +
+                '&libaries=services';
             document.head.appendChild(script);
         }
     },
@@ -83,9 +67,29 @@ export default {
                 center: new kakao.maps.LatLng(37.5666805, 126.9784147),
                 level: 5,
             };
-
             var map = new kakao.maps.Map(container, options);
-            map.setMapTypeId(kakao.maps.MapTypeId.LOADMAP);
+            this.map = map;
+
+            var marker = new kakao.maps.Marker({
+                // 지도 중심좌표에 마커를 생성합니다
+                position: map.getCenter(),
+            });
+            // 지도에 마커를 표시합니다
+            marker.setMap(map);
+
+            // 지도에 클릭 이벤트를 등록합니다
+            // 지도를 클릭하면 마지막 파라미터로 넘어온 함수를 호출합니다
+            let base = this;
+            kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+                // 클릭한 위도, 경도 정보를 가져옵니다
+                var latlng = mouseEvent.latLng;
+
+                // 마커 위치를 클릭한 위치로 옮깁니다
+                marker.setPosition(latlng);
+
+                base.lat = latlng.getLat();
+                base.lng = latlng.getLng();
+            });
         },
     },
 };
