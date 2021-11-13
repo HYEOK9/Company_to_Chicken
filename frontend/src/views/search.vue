@@ -2,7 +2,18 @@
     <div id="app">
         <v-app>
             <v-row align="center" justify="center">
-                <v-col cols="4" align="center" align-self="center">
+                <v-col cols="1"></v-col>
+                <v-col cols="4" align="center">
+                    <v-row align="center" justify="center"
+                        ><span
+                            style="
+                                color: white;
+                                font-weight: bold;
+                                font-size: 1.3rem;
+                            "
+                            >차리실 곳에 핀을 위치시켜주세요!</span
+                        ><br /><br
+                    /></v-row>
                     <v-form>
                         <v-row align="center"
                             ><v-col>
@@ -17,19 +28,46 @@
                                 ></v-text-field></v-col
                         ></v-row>
                         <v-row align="center"
-                            ><v-col
-                                ><v-btn to="/search/result"
-                                    >결과확인</v-btn
-                                ></v-col
+                            ><v-col>
+                                <v-dialog
+                                    transition="dialog-top-transition"
+                                    max-width="600"
+                                >
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            >결과확인</v-btn
+                                        >
+                                    </template>
+                                    <template v-slot:default="dialog">
+                                        <v-card>
+                                            <v-toolbar dark
+                                                >이곳에 치킨집을
+                                                차리면...</v-toolbar
+                                            >
+                                            <v-card-text>
+                                                <div class="pa-12">
+                                                    <span>위도:{{ lat }}</span
+                                                    ><br />
+                                                    <span>경도:{{ lng }}</span>
+                                                </div>
+                                            </v-card-text>
+                                            <v-card-actions class="justify-end">
+                                                <v-btn
+                                                    text
+                                                    @click="
+                                                        dialog.value = false
+                                                    "
+                                                    >Close</v-btn
+                                                >
+                                            </v-card-actions>
+                                        </v-card>
+                                    </template>
+                                </v-dialog></v-col
                             ></v-row
                         ></v-form
                     ></v-col
-                ><v-col cols="1" align-self="center"
-                    ><v-btn elevation="2" @click="searchPlace"
-                        >검색</v-btn
-                    ></v-col
                 >
-                <v-col cols="5">
+                <v-col cols="6" align="center">
                     <div id="map" @click="clickMap"></div>
                 </v-col> </v-row
         ></v-app>
@@ -38,10 +76,11 @@
 <script>
 export default {
     name: 'search',
+    components: {},
     data() {
         return {
             map: null,
-            appkey: 'be47c3ecdef469dbffe0caa036397774',
+            appkey: 'b538a1ec39e03ceb8d52b0d35bc01656',
             lat: 37.5666805,
             lng: 126.9784147,
             keyword: '',
@@ -56,7 +95,8 @@ export default {
             script.onload = () => kakao.maps.load(this.initMap);
             script.src =
                 'http://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
-                this.appkey;
+                this.appkey +
+                '&libraries=services';
             document.head.appendChild(script);
         }
     },
@@ -71,14 +111,10 @@ export default {
             this.map = map;
 
             var marker = new kakao.maps.Marker({
-                // 지도 중심좌표에 마커를 생성합니다
                 position: map.getCenter(),
             });
-            // 지도에 마커를 표시합니다
             marker.setMap(map);
             this.marker = marker;
-            // 지도에 클릭 이벤트를 등록합니다
-            // 지도를 클릭하면 마지막 파라미터로 넘어온 함수를 호출합니다
         },
         clickMap() {
             let map = this.map;
@@ -86,10 +122,8 @@ export default {
             let base = this;
 
             kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
-                // 클릭한 위도, 경도 정보를 가져옵니다
                 var latlng = mouseEvent.latLng;
 
-                // 마커 위치를 클릭한 위치로 옮깁니다
                 marker.setPosition(latlng);
 
                 base.lat = latlng.getLat();
@@ -115,6 +149,8 @@ export default {
                     }
 
                     map.setBounds(bounds);
+                } else {
+                    alert('Invalid input');
                 }
             }
             function displayMarker(place) {
