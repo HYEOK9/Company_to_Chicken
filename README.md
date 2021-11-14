@@ -11,10 +11,9 @@
 ## **Built with**
 
 -   FrontEnd
-    -   JS
+    -   Vanilla JS
     -   [Vue.js](https://vuejs.org/)
-    -   [Vuetify](https://vuetifyjs.com/en/)
-    -   axios
+    -   [bootstrap](https://getbootstrap.com/)
 -   BackEnd
     -   [Node.js](https://nodejs.org/en/)
 

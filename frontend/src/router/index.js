@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import home from '../views/home';
-import search from '../views/search';
-import result from '../views/result';
+import home from '@/views/home';
+import search from '@/views/search';
+import result from '@/views/result';
 Vue.use(VueRouter);
 
 const routes = [

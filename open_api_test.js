@@ -1,104 +1,142 @@
-//credentials.txt 파일안에 encode 되기전 서비스키를 넣으면됨. 해당 파일을 올리지 않았음.
-const fs = require('fs')
-const buffer = fs.readFileSync("./credentials.txt")
-const serviceKey = buffer.toString();
+//credentials.txt 파일안에 encode 되기전 서비스키를 넣으면됨. 해당 파일을 올리지 않았음
+const fs = require('fs');
+const buffer = fs.readFileSync('./credentials.txt');
+var temp_str = buffer.toString().split('\n');
+const serviceKey = temp_str[0];
+const sgis_key = temp_str[1];
+const sgis_secretKey = temp_str[2];
+const express = require('express');
+const app = express();
+const axios = require('axios');
 
-function test(){
-    //
-    var request = require('request');
-    var url = 'http://apis.data.go.kr/B553077/api/open/sdsc2/storeZoneOne';
-    var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + encodeURIComponent(serviceKey); /* Service Key*/
-    queryParams += '&' + encodeURIComponent('key') + '=' + encodeURIComponent('9174'); /* */
-    queryParams += '&' + encodeURIComponent('servicekey') + '=' + encodeURIComponent(serviceKey); /* */
-    queryParams += '&' + encodeURIComponent('type') + '=' + encodeURIComponent('json'); /* */
+//axios 사용해서 훨씬 보기좋게 다시만들기.
 
-    request({
-        url: url + queryParams,
-        method: 'GET'
-    }, function (error, response, body) {
-        console.log('Status', response.statusCode);
-        console.log('Headers', JSON.stringify(response.headers));
-        console.log('Reponse received', body);
-    });
-    var received ={
-        "header" : {
-                "description" : "소상공인시장진흥공단 주요상권"
-                ,"columns" : ["상권번호","상권명","시도코드","시도명","시군구코드","시군구명","상권면적","좌표개수","좌표값","데이터기준일자"]
-                ,"resultCode" : "00"
-                ,"resultMsg" : "NORMAL SERVICE"
-        },
-        "body" : {
-                        "items" : [
-                                {
-                                "trarNo" : 9174
-                                ,"mainTrarNm" : "인사동"
-                                ,"ctprvnCd" : "11"
-                                ,"ctprvnNm" : "서울특별시"
-                                ,"signguCd" : "11110"
-                                ,"signguNm" : "종로구"
-                                ,"trarArea" : 226875
-                                ,"coordNum" : 21
-                                ,"coords" : "MULTIPOLYGON (((126.986059148338 37.5765234907315, 126.985943099285 37.5765933022497, 126.985003595935 37.5761584486461, 126.984321612825 37.5758475109755, 126.983682074805 37.5755861301059, 126.983073659879 37.5753743049793, 126.983019911215 37.5752819452711, 126.982977487921 37.5751693150508, 126.983105316596 37.573220945966, 126.983179233794 37.5718334337701, 126.983151246104 37.5705540242774, 126.983270142803 37.5703828545296, 126.983428633426 37.5703107995486, 126.985822713216 37.5702976242875, 126.98744706053 37.5703113418908, 126.987429831033 37.571653814357, 126.987588062984 37.5729782873447, 126.987372867362 37.5736044495484, 126.986789692656 37.5745999719345, 126.986195066917 37.5761631127724, 126.986059148338 37.5765234907315)))"
-                                ,"stdrDt" : "2021-06-30"
-                                }
-                        ]
-        }
+app.get('/:lat/:long', async (req, res) => {
+    var result = await get_n_store(req.params.lat, req.params.long);
+    console.log(result);
+    res.send(result);
+});
+
+function encode(params) {
+    var result = '';
+    var first = true;
+    for (const [key, value] of Object.entries(params)) {
+        if (first) {
+            result += '?';
+            first = false;
+        } else result += '&';
+        result += encodeURIComponent(key) + '=' + encodeURIComponent(value);
     }
-    console.log(received['body']['items'])
-    // request 시간이 꽤 오래 걸리기는 함 이유가 뭘까요....
+    return result;
 }
 
-function test2(){
-    var request = require('request');
+// function : get code of address with lat, long
+// param : float -> lat, float -> long
+// 반경 100미터 이내에 아무 상점을 가져오고, 거기서 정보를 추출함.
+// 지역명(좌표기준) signguNm
+// 치킨집 개수     n_store
+// 지역명(인구기준) sgg_nm
+// population   population
+async function get_n_store(lat, long) {
+    var result = {};
 
-    var url = 'http://apis.data.go.kr/B553077/api/open/sdsc2/largeUpjongList';
-    var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + serviceKey; /* Service Key*/
-    queryParams += '&' + encodeURIComponent('type') + '=' + encodeURIComponent('xml'); /* */
-
-    request({
-        url: url + queryParams,
-        method: 'GET'
-    }, function (error, response, body) {
-        console.log('Status', response.statusCode);
-        console.log('Headers', JSON.stringify(response.headers));
-        console.log('Reponse received', body);
+    // conver lat, long to address
+    var url = 'http://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRadius';
+    var queryParams = encode({
+        serviceKey: decodeURIComponent(serviceKey),
+        pageNo: '1',
+        radius: '100',
+        cx: long.toString(),
+        cy: lat.toString(),
+        type: 'json',
     });
-}
 
-function test3(){
-    var request = require('request');
-    var url = 'http://apis.data.go.kr/B553077/api/open/sdsc2/middleUpjongList';
-    var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + serviceKey; /* Service Key*/
-    queryParams += '&' + encodeURIComponent('servicekey') + '=' + serviceKey; /* */
-    queryParams += '&' + encodeURIComponent('indsLclsCd') + '=' + encodeURIComponent('Q'); /* */
-
-    request({
-        url: url + queryParams,
-        method: 'GET'
-    }, function (error, response, body) {
-        console.log('Status', response.statusCode);
-        console.log('Headers', JSON.stringify(response.headers));
-        console.log('Reponse received', body);
+    var store = await axios.get(url + queryParams);
+    store = store.data['body']['items'][0];
+    var signguCd = store['signguCd'];
+    var signguNm = store['signguNm'];
+    //console.log(signguCd, signguNm)
+    //with store_class_code and address
+    // get number of store_class_code store
+    var class_code = 'Q05A08';
+    var url2 = 'http://apis.data.go.kr/B553077/api/open/sdsc2/storeListInDong';
+    var queryParams2 = encode({
+        serviceKey: decodeURIComponent(serviceKey),
+        pageNo: '1',
+        numOfRows: '10',
+        divId: 'signguCd',
+        key: signguCd,
+        indsLclsCd: class_code.slice(0, 1),
+        indsMclsCd: class_code.slice(0, 3),
+        indsSclsCd: class_code,
+        type: 'json',
     });
-}
+    var n_store_result = await axios.get(url2 + queryParams2);
+    var n_store = n_store_result.data['body']['totalCount'];
+    //console.log(n_store)
 
-function test4(){
-    var request = require('request');
+    //get token from kostat to connect
+    var token_url =
+        'https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json';
+    var token_params =
+        '?' + encodeURIComponent('consumer_key') + '=' + sgis_key;
+    token_params +=
+        '&' + encodeURIComponent('consumer_secret') + '=' + sgis_secretKey;
+    var token_result = await axios.get(token_url + token_params);
+    var access_token = token_result.data['result']['accessToken'];
 
-    var url = 'http://apis.data.go.kr/B553077/api/open/sdsc2/smallUpjongList';
-    var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + serviceKey; /* Service Key*/
-    queryParams += '&' + encodeURIComponent('indsLclsCd') + '=' + encodeURIComponent('Q'); /* */
-    queryParams += '&' + encodeURIComponent('indsMclsCd') + '=' + encodeURIComponent('Q05'); /* */
-    queryParams += '&' + encodeURIComponent('servicekey') + '=' + serviceKey; /* */
-
-    request({
-        url: url + queryParams,
-        method: 'GET'
-    }, function (error, response, body) {
-        console.log('Status', response.statusCode);
-        console.log('Headers', JSON.stringify(response.headers));
-        console.log('Reponse received', body);
+    //get translated posX posY
+    var translate_url =
+        'https://sgisapi.kostat.go.kr/OpenAPI3/transformation/transcoord.json';
+    var translate_param = encode({
+        accessToken: decodeURIComponent(access_token),
+        src: '4326',
+        dst: '5179',
+        posX: long.toString(),
+        posY: lat.toString(),
     });
+    var translate_result = await axios.get(translate_url + translate_param);
+    var posX = translate_result.data['result']['posX'];
+    var posY = translate_result.data['result']['posY'];
+
+    //using translated pos get address code
+    var addr_url =
+        'https://sgisapi.kostat.go.kr/OpenAPI3/personal/findcodeinsmallarea.json';
+    var addr_param =
+        '?' + encodeURIComponent('accessToken') + '=' + access_token;
+    addr_param +=
+        '&' + encodeURIComponent('x_coor') + '=' + encodeURIComponent(posX);
+    addr_param +=
+        '&' + encodeURIComponent('y_coor') + '=' + encodeURIComponent(posY);
+    var addr_result = await axios.get(addr_url + addr_param);
+    var sgg_nm = addr_result.data['result']['sgg_nm'];
+    var sgg_cd = addr_result.data['result']['sgg_cd'];
+    var sido_nm = addr_result.data['result']['sido_nm'];
+    var sido_cd = addr_result.data['result']['sido_cd'];
+
+    //using address code get population
+    var pop_url = 'https://sgisapi.kostat.go.kr/OpenAPI3/stats/population.json';
+    var pop_param = encode({
+        accessToken: access_token,
+        year: '2020',
+        adm_cd: sido_cd + sgg_cd,
+        low_search: '0',
+    });
+    var pop_result = await axios.get(pop_url + pop_param);
+    var population = pop_result.data['result'][0]['tot_ppltn'];
+    // console.log('지역명(좌표기준)', signguNm)
+    // console.log('치킨집 개수', n_store)
+    // console.log('지역명(인구기준)', sgg_nm)
+    // console.log('population', population)
+    result['signguNm'] = signguNm;
+    result['n_store'] = n_store;
+    result['sgg_nm'] = sgg_nm;
+    result['population'] = population;
+    return result;
 }
-//Q05A08
-test4()
+
+async function get() {
+    var result = await get_n_store(37.5559412279911, 126.924263894094);
+    console.log(result);
+}
+get();

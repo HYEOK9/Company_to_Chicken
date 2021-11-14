@@ -18,7 +18,7 @@
                         <v-row align="center"
                             ><v-col>
                                 <v-text-field
-                                    @keydown.enter.prevent="searchPlace"
+                                    @keydown.enter.prevent="searchANDget_store"
                                     v-model="keyword"
                                     rounded
                                     height="10vh"
@@ -34,7 +34,10 @@
                                     max-width="600"
                                 >
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on"
+                                        <v-btn
+                                            v-bind="attrs"
+                                            v-on="on"
+                                            @click="get_store"
                                             >결과확인</v-btn
                                         >
                                     </template>
@@ -46,9 +49,19 @@
                                             >
                                             <v-card-text>
                                                 <div class="pa-12">
-                                                    <span>위도:{{ lat }}</span
+                                                    <span
+                                                        >위치 :{{
+                                                            guname
+                                                        }}</span
                                                     ><br />
-                                                    <span>경도:{{ lng }}</span>
+                                                    <span
+                                                        >근처 치킨집 갯수 :
+                                                        {{ n_store }}개</span
+                                                    ><br />
+                                                    <span
+                                                        >유동인구 :
+                                                        {{ population }}명</span
+                                                    >
                                                 </div>
                                             </v-card-text>
                                             <v-card-actions class="justify-end">
@@ -74,6 +87,7 @@
     </div>
 </template>
 <script>
+import axios from 'axios';
 export default {
     name: 'search',
     components: {},
@@ -85,6 +99,10 @@ export default {
             lng: 126.9784147,
             keyword: '',
             marker: [],
+            result: {},
+            guname: '',
+            n_store: 0,
+            population: 0,
         };
     },
     mounted() {
@@ -162,6 +180,22 @@ export default {
                 });
                 base.marker = marker;
             }
+        },
+        async get_store() {
+            axios
+                .get('http://localhost:3000/' + this.lat + '/' + this.lng)
+                .then((response) => {
+                    this.result = response;
+                    this.guname = this.result['data'].sgg_nm;
+                    this.n_store = this.result['data'].n_store;
+                    this.population = this.result['data'].population;
+                    console.log(response);
+                })
+                .catch((error) => console.log(error));
+        },
+        searchANDget_store() {
+            this.searchPlace();
+            this.get_store();
         },
     },
 };
