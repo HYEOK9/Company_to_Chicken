@@ -8,5 +8,6 @@ Vue.prototype.$axios = axios;
 new Vue({
     router,
     vuetify,
+    components: { App },
     render: (h) => h(App),
 }).$mount('#app');

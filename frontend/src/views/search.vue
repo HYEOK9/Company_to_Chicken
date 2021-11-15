@@ -35,29 +35,58 @@
                                 >
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn
+                                            :disabled="dialog"
+                                            :loading="dialog"
                                             v-bind="attrs"
                                             v-on="on"
-                                            @click="get_store"
+                                            @click="
+                                                [get_store(), (dialog = true)]
+                                            "
                                             >결과확인</v-btn
+                                        ><v-dialog
+                                            v-model="dialog"
+                                            hide-overlay
+                                            persistent
+                                            width="300"
                                         >
+                                            <v-card color="black" dark>
+                                                <v-card-text
+                                                    class="text-center"
+                                                >
+                                                    치킨집 차리는 중...
+                                                    <v-progress-linear
+                                                        indeterminate
+                                                        color="white"
+                                                        class="mb-0"
+                                                    ></v-progress-linear>
+                                                </v-card-text>
+                                            </v-card>
+                                        </v-dialog>
                                     </template>
-                                    <template v-slot:default="dialog">
+                                    <template
+                                        v-if="show"
+                                        v-slot:default="dialog"
+                                    >
                                         <v-card>
                                             <v-toolbar dark
                                                 >이곳에 치킨집을
                                                 차리면...</v-toolbar
                                             >
-                                            <v-card-text>
-                                                <div class="pa-12">
+                                            <v-card-text class="text-center">
+                                                <div
+                                                    style="font-size: 1.2rem"
+                                                    class="pa-12"
+                                                >
+                                                    <br /><br />
                                                     <span
                                                         >위치 :{{
                                                             guname
                                                         }}</span
-                                                    ><br />
+                                                    ><br /><br />
                                                     <span
-                                                        >근처 치킨집 갯수 :
+                                                        >근처 치킨집 개수 :
                                                         {{ n_store }}개</span
-                                                    ><br />
+                                                    ><br /><br />
                                                     <span
                                                         >유동인구 :
                                                         {{ population }}명</span
@@ -103,6 +132,8 @@ export default {
             guname: '',
             n_store: 0,
             population: 0,
+            dialog: false,
+            show: false,
         };
     },
     mounted() {
@@ -183,7 +214,7 @@ export default {
         },
         async get_store() {
             axios
-                .get('http://localhost:3000/' + this.lat + '/' + this.lng)
+                .get('/' + this.lat + '/' + this.lng)
                 .then((response) => {
                     this.result = response;
                     this.guname = this.result['data'].sgg_nm;
@@ -196,6 +227,16 @@ export default {
         searchANDget_store() {
             this.searchPlace();
             this.get_store();
+        },
+    },
+    watch: {
+        dialog(val) {
+            if (!val) return;
+            setTimeout(() => {
+                this.dialog = false;
+                this.show = true;
+            }, 3000);
+            this.show = false;
         },
     },
 };

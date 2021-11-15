@@ -8,9 +8,10 @@ const express = require('express');
 const app = express();
 const axios = require('axios');
 var cors = require('cors');
-
+// var path = require('path');
+// var router = express.Router();
 //axios 사용해서 훨씬 보기좋게 다시만들기.
-app.use(cors());
+https: app.use(cors());
 app.options('*', cors());
 
 app.get('/:lat/:long', async (req, res) => {
@@ -27,9 +28,6 @@ app.get('/:lat/:long', async (req, res) => {
         result['processing_time'] = 99999;
         res.send(result);
     }
-});
-app.listen(3000, () => {
-    console.log('Conneted 3000 port');
 });
 
 // function : get code of address with lat, long
@@ -153,3 +151,11 @@ async function get_n_store(lat, long) {
     result['processing_time'] = end - start;
     return result;
 }
+
+app.listen(3000, () => {
+    console.log('Server listening on : htp://localost:3000');
+});
+
+// router.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '/frontend/public', 'index.html'));
+// });
