@@ -8,6 +8,7 @@ const express = require('express');
 const app = express();
 const axios = require('axios');
 var cors = require('cors');
+var httpPort = 3000;
 // var path = require('path');
 // var router = express.Router();
 //axios 사용해서 훨씬 보기좋게 다시만들기.
@@ -153,9 +154,8 @@ async function get_n_store(lat, long) {
 }
 
 app.listen(3000, () => {
-    console.log('Server listening on : htp://localost:3000');
+    console.log('Server listening on: http://localhost:%s', httpPort);
 });
-
 // router.get('*', (req, res) => {
 //     res.sendFile(path.join(__dirname, '/frontend/public', 'index.html'));
 // });

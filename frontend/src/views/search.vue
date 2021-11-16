@@ -18,7 +18,7 @@
                         <v-row align="center"
                             ><v-col>
                                 <v-text-field
-                                    @keydown.enter.prevent="searchANDget_store"
+                                    @keydown.enter.prevent="searchPlace"
                                     v-model="keyword"
                                     rounded
                                     height="10vh"
@@ -39,9 +39,7 @@
                                             :loading="dialog"
                                             v-bind="attrs"
                                             v-on="on"
-                                            @click="
-                                                [get_store(), (dialog = true)]
-                                            "
+                                            @click="get_store"
                                             >결과확인</v-btn
                                         ><v-dialog
                                             v-model="dialog"
@@ -49,25 +47,23 @@
                                             persistent
                                             width="300"
                                         >
-                                            <v-card color="black" dark>
-                                                <v-card-text
-                                                    class="text-center"
-                                                >
-                                                    치킨집 차리는 중...
+                                            <v-card color="white" dark>
+                                                <v-card-text class="text-center"
+                                                    ><span style="color: black">
+                                                        치킨집 차리는 중...
+                                                    </span>
                                                     <v-progress-linear
                                                         indeterminate
-                                                        color="white"
+                                                        color="black"
                                                         class="mb-0"
+                                                        height="10"
                                                     ></v-progress-linear>
                                                 </v-card-text>
                                             </v-card>
                                         </v-dialog>
                                     </template>
-                                    <template
-                                        v-if="show"
-                                        v-slot:default="dialog"
-                                    >
-                                        <v-card>
+                                    <template v-slot:default="dialog">
+                                        <v-card v-if="show">
                                             <v-toolbar dark
                                                 >이곳에 치킨집을
                                                 차리면...</v-toolbar
@@ -80,16 +76,22 @@
                                                     <br /><br />
                                                     <span
                                                         >위치 :{{
-                                                            guname
+                                                            result['guname']
                                                         }}</span
                                                     ><br /><br />
                                                     <span
                                                         >근처 치킨집 개수 :
-                                                        {{ n_store }}개</span
+                                                        {{
+                                                            result['n_store']
+                                                        }}개</span
                                                     ><br /><br />
                                                     <span
                                                         >유동인구 :
-                                                        {{ population }}명</span
+                                                        {{
+                                                            result[
+                                                                'population'
+                                                            ]
+                                                        }}명</span
                                                     >
                                                 </div>
                                             </v-card-text>
@@ -97,7 +99,39 @@
                                                 <v-btn
                                                     text
                                                     @click="
-                                                        dialog.value = false
+                                                        [
+                                                            (dialog.value = false),
+                                                            (show = false),
+                                                        ]
+                                                    "
+                                                    >Close</v-btn
+                                                >
+                                            </v-card-actions> </v-card
+                                        ><v-card v-if="showerr">
+                                            <v-toolbar dark
+                                                >이곳에 치킨집을
+                                                차리면...</v-toolbar
+                                            >
+                                            <v-card-text class="text-center">
+                                                <div
+                                                    style="font-size: 1.2rem"
+                                                    class="pa-12"
+                                                >
+                                                    <br /><br />
+                                                    <span
+                                                        >여기에 차리면
+                                                        안됩니다ㅠㅠ</span
+                                                    >
+                                                </div>
+                                            </v-card-text>
+                                            <v-card-actions class="justify-end">
+                                                <v-btn
+                                                    text
+                                                    @click="
+                                                        [
+                                                            (dialog.value = false),
+                                                            (showerr = false),
+                                                        ]
                                                     "
                                                     >Close</v-btn
                                                 >
@@ -128,12 +162,10 @@ export default {
             lng: 126.9784147,
             keyword: '',
             marker: [],
-            result: {},
-            guname: '',
-            n_store: 0,
-            population: 0,
+            result: { guname: '', n_store: 0, population: 0 },
             dialog: false,
             show: false,
+            showerr: false,
         };
     },
     mounted() {
@@ -213,30 +245,24 @@ export default {
             }
         },
         async get_store() {
+            this.dialog = true;
             axios
                 .get('/' + this.lat + '/' + this.lng)
                 .then((response) => {
-                    this.result = response;
-                    this.guname = this.result['data'].sgg_nm;
-                    this.n_store = this.result['data'].n_store;
-                    this.population = this.result['data'].population;
+                    let res = response;
+                    this.result['guname'] = res['data'].sgg_nm;
+                    this.result['n_store'] = res['data'].n_store;
+                    this.result['population'] = res['data'].population;
                     console.log(response);
+                    if (this.result['guname'] != 'error') {
+                        this.dialog = false;
+                        this.show = true;
+                    } else {
+                        this.dialog = false;
+                        this.showerr = true;
+                    }
                 })
                 .catch((error) => console.log(error));
-        },
-        searchANDget_store() {
-            this.searchPlace();
-            this.get_store();
-        },
-    },
-    watch: {
-        dialog(val) {
-            if (!val) return;
-            setTimeout(() => {
-                this.dialog = false;
-                this.show = true;
-            }, 3000);
-            this.show = false;
         },
     },
 };
