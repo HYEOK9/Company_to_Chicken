@@ -1,152 +1,371 @@
 <template>
     <div id="app">
-        <v-app>
-            <v-row align="center" justify="center">
-                <v-col cols="1"></v-col>
-                <v-col cols="4" align="center">
-                    <v-row align="center" justify="center"
-                        ><span
-                            style="
-                                color: white;
-                                font-weight: bold;
-                                font-size: 1.3rem;
-                            "
-                            >차리실 곳에 핀을 위치시켜주세요!</span
-                        ><br /><br
-                    /></v-row>
-                    <v-form>
-                        <v-row align="center"
-                            ><v-col>
-                                <v-text-field
-                                    @keydown.enter.prevent="searchPlace"
-                                    v-model="keyword"
-                                    rounded
-                                    height="10vh"
-                                    background-color="white"
-                                    label="지역 검색"
-                                    dense
-                                ></v-text-field></v-col
-                        ></v-row>
-                        <v-row align="center"
-                            ><v-col>
-                                <v-dialog
-                                    transition="dialog-top-transition"
-                                    max-width="600"
-                                >
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-btn
-                                            :disabled="dialog"
-                                            :loading="dialog"
-                                            v-bind="attrs"
-                                            v-on="on"
-                                            @click="get_store"
-                                            >결과확인</v-btn
-                                        ><v-dialog
-                                            v-model="dialog"
-                                            hide-overlay
-                                            persistent
-                                            width="300"
+        <div v-if="!isMobile()">
+            <v-app>
+                <v-row align="center" justify="center" dense>
+                    <v-col cols="1"></v-col>
+                    <v-col cols="4" align="center">
+                        <v-row align="center" justify="center"
+                            ><span
+                                style="
+                                    color: white;
+                                    font-weight: bold;
+                                    font-size: 1.3rem;
+                                "
+                                >차리실 곳에 핀을 위치시켜주세요!</span
+                            ><br /><br
+                        /></v-row>
+                        <v-form>
+                            <v-row align="center"
+                                ><v-col>
+                                    <v-text-field
+                                        @keydown.enter.prevent="searchPlace"
+                                        v-model="keyword"
+                                        rounded
+                                        height="10vh"
+                                        background-color="white"
+                                        label="지역 검색"
+                                        dense
+                                    ></v-text-field></v-col
+                            ></v-row>
+                            <v-row align="center"
+                                ><v-col>
+                                    <v-dialog
+                                        transition="dialog-top-transition"
+                                        max-width="600"
+                                    >
+                                        <template
+                                            v-slot:activator="{ on, attrs }"
                                         >
-                                            <v-card color="white" dark>
-                                                <v-card-text class="text-center"
-                                                    ><span style="color: black">
-                                                        치킨집 차리는 중...
-                                                    </span>
-                                                    <v-progress-linear
-                                                        indeterminate
-                                                        color="black"
-                                                        class="mb-0"
-                                                        height="10"
-                                                    ></v-progress-linear>
+                                            <v-btn
+                                                :disabled="dialog"
+                                                :loading="dialog"
+                                                v-bind="attrs"
+                                                v-on="on"
+                                                @click="get_store"
+                                                >결과확인</v-btn
+                                            ><v-dialog
+                                                v-model="dialog"
+                                                hide-overlay
+                                                persistent
+                                                width="300"
+                                            >
+                                                <v-card color="white" dark>
+                                                    <v-card-text
+                                                        class="text-center"
+                                                        ><span
+                                                            style="color: black"
+                                                        >
+                                                            치킨집 차리는 중...
+                                                        </span>
+                                                        <v-progress-linear
+                                                            indeterminate
+                                                            color="black"
+                                                            class="mb-0"
+                                                            height="10"
+                                                        ></v-progress-linear>
+                                                    </v-card-text>
+                                                </v-card>
+                                            </v-dialog>
+                                        </template>
+                                        <template v-slot:default="dialog">
+                                            <v-card v-if="show">
+                                                <v-toolbar dark
+                                                    >이곳에 치킨집을
+                                                    차리면...</v-toolbar
+                                                >
+                                                <v-card-text
+                                                    class="text-center"
+                                                >
+                                                    <div
+                                                        style="
+                                                            font-size: 1.2rem;
+                                                        "
+                                                        class="pa-12"
+                                                    >
+                                                        <br /><br />
+                                                        <span
+                                                            >위 치 :{{
+                                                                result['guname']
+                                                            }}</span
+                                                        ><br /><br />
+                                                        <span
+                                                            >근처 치킨집 개수 :
+                                                            {{
+                                                                result[
+                                                                    'n_store'
+                                                                ]
+                                                            }}개</span
+                                                        ><br /><br />
+                                                        <span
+                                                            >유 동 인 구 :
+                                                            {{
+                                                                result[
+                                                                    'population'
+                                                                ]
+                                                            }}명</span
+                                                        ><br /><br />
+                                                        <span
+                                                            >점 수 :{{
+                                                                (
+                                                                    (result[
+                                                                        'population'
+                                                                    ] /
+                                                                        result[
+                                                                            'n_store'
+                                                                        ] /
+                                                                        100) *
+                                                                    3.5
+                                                                ).toFixed(2)
+                                                            }}</span
+                                                        >
+                                                    </div>
                                                 </v-card-text>
-                                            </v-card>
-                                        </v-dialog>
-                                    </template>
-                                    <template v-slot:default="dialog">
-                                        <v-card v-if="show">
-                                            <v-toolbar dark
-                                                >이곳에 치킨집을
-                                                차리면...</v-toolbar
-                                            >
-                                            <v-card-text class="text-center">
-                                                <div
-                                                    style="font-size: 1.2rem"
-                                                    class="pa-12"
+                                                <v-card-actions
+                                                    class="justify-end"
                                                 >
-                                                    <br /><br />
-                                                    <span
-                                                        >위치 :{{
-                                                            result['guname']
-                                                        }}</span
-                                                    ><br /><br />
-                                                    <span
-                                                        >근처 치킨집 개수 :
-                                                        {{
-                                                            result['n_store']
-                                                        }}개</span
-                                                    ><br /><br />
-                                                    <span
-                                                        >유동인구 :
-                                                        {{
-                                                            result[
-                                                                'population'
+                                                    <v-btn
+                                                        text
+                                                        @click="
+                                                            [
+                                                                (dialog.value = false),
+                                                                (show = false),
                                                             ]
-                                                        }}명</span
+                                                        "
+                                                        >Close</v-btn
                                                     >
-                                                </div>
-                                            </v-card-text>
-                                            <v-card-actions class="justify-end">
-                                                <v-btn
-                                                    text
-                                                    @click="
-                                                        [
-                                                            (dialog.value = false),
-                                                            (show = false),
-                                                        ]
-                                                    "
-                                                    >Close</v-btn
+                                                </v-card-actions> </v-card
+                                            ><v-card v-if="showerr">
+                                                <v-toolbar dark
+                                                    >이곳에 치킨집을
+                                                    차리면...</v-toolbar
                                                 >
-                                            </v-card-actions> </v-card
-                                        ><v-card v-if="showerr">
-                                            <v-toolbar dark
-                                                >이곳에 치킨집을
-                                                차리면...</v-toolbar
+                                                <v-card-text
+                                                    class="text-center"
+                                                >
+                                                    <div
+                                                        style="
+                                                            font-size: 1.2rem;
+                                                        "
+                                                        class="pa-12"
+                                                    >
+                                                        <br /><br />
+                                                        <span
+                                                            >여기에 차리면
+                                                            안됩니다ㅠㅠ</span
+                                                        >
+                                                    </div>
+                                                </v-card-text>
+                                                <v-card-actions
+                                                    class="justify-end"
+                                                >
+                                                    <v-btn
+                                                        text
+                                                        @click="
+                                                            [
+                                                                (dialog.value = false),
+                                                                (showerr = false),
+                                                            ]
+                                                        "
+                                                        >Close</v-btn
+                                                    >
+                                                </v-card-actions>
+                                            </v-card>
+                                        </template>
+                                    </v-dialog></v-col
+                                ></v-row
+                            ></v-form
+                        ></v-col
+                    >
+                    <v-col cols="6" align="center">
+                        <div id="map" @click="clickMap"></div>
+                    </v-col> </v-row
+            ></v-app>
+        </div>
+        <div v-else>
+            <v-app>
+                <v-row align="center" justify="center" dense
+                    ><v-col cols="10" align="center">
+                        <div id="mobileMap" @click="clickMap"></div>
+                    </v-col>
+                </v-row>
+                <v-row align="center" justify="center" dense>
+                    <v-col cols="8" align="center">
+                        <v-row align="center" justify="center"
+                            ><span
+                                style="
+                                    color: white;
+                                    font-weight: bold;
+                                    font-size: 4vw;
+                                "
+                                >차리실 곳에 핀을 위치시켜주세요!</span
+                            ><br /><br
+                        /></v-row>
+                        <v-form>
+                            <v-row align="center" dense
+                                ><v-col>
+                                    <v-text-field
+                                        @keydown.enter.prevent="searchPlace"
+                                        v-model="keyword"
+                                        rounded
+                                        height="10vh"
+                                        background-color="white"
+                                        label="지역 검색"
+                                        dense
+                                    ></v-text-field></v-col
+                            ></v-row>
+                            <v-row align="center" dense
+                                ><v-col>
+                                    <v-dialog
+                                        transition="dialog-top-transition"
+                                        max-width="600"
+                                    >
+                                        <template
+                                            v-slot:activator="{ on, attrs }"
+                                        >
+                                            <v-btn
+                                                :disabled="dialog"
+                                                :loading="dialog"
+                                                v-bind="attrs"
+                                                v-on="on"
+                                                @click="get_store"
+                                                >결과확인</v-btn
+                                            ><v-dialog
+                                                v-model="dialog"
+                                                hide-overlay
+                                                persistent
+                                                width="300"
                                             >
-                                            <v-card-text class="text-center">
-                                                <div
-                                                    style="font-size: 1.2rem"
-                                                    class="pa-12"
+                                                <v-card color="white" dark>
+                                                    <v-card-text
+                                                        class="text-center"
+                                                        ><span
+                                                            style="color: black"
+                                                        >
+                                                            치킨집 차리는 중...
+                                                        </span>
+                                                        <v-progress-linear
+                                                            indeterminate
+                                                            color="black"
+                                                            class="mb-0"
+                                                            height="10"
+                                                        ></v-progress-linear>
+                                                    </v-card-text>
+                                                </v-card>
+                                            </v-dialog>
+                                        </template>
+                                        <template v-slot:default="dialog">
+                                            <v-card v-if="show">
+                                                <v-toolbar dark
+                                                    >이곳에 치킨집을
+                                                    차리면...</v-toolbar
                                                 >
-                                                    <br /><br />
-                                                    <span
-                                                        >여기에 차리면
-                                                        안됩니다ㅠㅠ</span
+                                                <v-card-text
+                                                    class="text-center"
+                                                >
+                                                    <div
+                                                        style="
+                                                            font-size: 1.2rem;
+                                                        "
+                                                        class="pa-12"
                                                     >
-                                                </div>
-                                            </v-card-text>
-                                            <v-card-actions class="justify-end">
-                                                <v-btn
-                                                    text
-                                                    @click="
-                                                        [
-                                                            (dialog.value = false),
-                                                            (showerr = false),
-                                                        ]
-                                                    "
-                                                    >Close</v-btn
+                                                        <br /><br />
+                                                        <span
+                                                            >위 치 :{{
+                                                                result['guname']
+                                                            }}</span
+                                                        ><br /><br />
+                                                        <span
+                                                            >근처 치킨집 개수 :
+                                                            {{
+                                                                result[
+                                                                    'n_store'
+                                                                ]
+                                                            }}개</span
+                                                        ><br /><br />
+                                                        <span
+                                                            >유 동 인 구 :
+                                                            {{
+                                                                result[
+                                                                    'population'
+                                                                ]
+                                                            }}명</span
+                                                        ><br /><br />
+                                                        <span
+                                                            >점 수 :{{
+                                                                (
+                                                                    (result[
+                                                                        'population'
+                                                                    ] /
+                                                                        result[
+                                                                            'n_store'
+                                                                        ] /
+                                                                        100) *
+                                                                    3.5
+                                                                ).toFixed(2)
+                                                            }}</span
+                                                        >
+                                                    </div>
+                                                </v-card-text>
+                                                <v-card-actions
+                                                    class="justify-end"
                                                 >
-                                            </v-card-actions>
-                                        </v-card>
-                                    </template>
-                                </v-dialog></v-col
-                            ></v-row
-                        ></v-form
-                    ></v-col
-                >
-                <v-col cols="6" align="center">
-                    <div id="map" @click="clickMap"></div>
-                </v-col> </v-row
-        ></v-app>
+                                                    <v-btn
+                                                        text
+                                                        @click="
+                                                            [
+                                                                (dialog.value = false),
+                                                                (show = false),
+                                                            ]
+                                                        "
+                                                        >Close</v-btn
+                                                    >
+                                                </v-card-actions> </v-card
+                                            ><v-card v-if="showerr">
+                                                <v-toolbar dark
+                                                    >이곳에 치킨집을
+                                                    차리면...</v-toolbar
+                                                >
+                                                <v-card-text
+                                                    class="text-center"
+                                                >
+                                                    <div
+                                                        style="
+                                                            font-size: 1.2rem;
+                                                        "
+                                                        class="pa-12"
+                                                    >
+                                                        <br /><br />
+                                                        <span
+                                                            >여기에 차리면
+                                                            안됩니다ㅠㅠ</span
+                                                        >
+                                                    </div>
+                                                </v-card-text>
+                                                <v-card-actions
+                                                    class="justify-end"
+                                                >
+                                                    <v-btn
+                                                        text
+                                                        @click="
+                                                            [
+                                                                (dialog.value = false),
+                                                                (showerr = false),
+                                                            ]
+                                                        "
+                                                        >Close</v-btn
+                                                    >
+                                                </v-card-actions>
+                                            </v-card>
+                                        </template>
+                                    </v-dialog></v-col
+                                ></v-row
+                            ></v-form
+                        ></v-col
+                    >
+                </v-row></v-app
+            >
+        </div>
     </div>
 </template>
 <script>
@@ -182,8 +401,25 @@ export default {
         }
     },
     methods: {
+        isMobile() {
+            if (
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                    navigator.userAgent
+                )
+            ) {
+                return true;
+            } else {
+                return false;
+            }
+        },
         initMap() {
-            var container = document.getElementById('map');
+            var container;
+            if (this.isMobile()) {
+                container = document.getElementById('mobileMap');
+            } else {
+                container = document.getElementById('map');
+            }
+
             var options = {
                 center: new kakao.maps.LatLng(37.5666805, 126.9784147),
                 level: 5,
@@ -247,14 +483,14 @@ export default {
         async get_store() {
             this.dialog = true;
             axios
-                .get('/' + this.lat + '/' + this.lng)
+                .get('http://3.36.188.57:3000/' + this.lat + '/' + this.lng)
                 .then((response) => {
                     let res = response;
                     this.result['guname'] = res['data'].sgg_nm;
                     this.result['n_store'] = res['data'].n_store;
                     this.result['population'] = res['data'].population;
                     console.log(response);
-                    if (this.result['guname'] != 'error') {
+                    if (this.result['n_store'] != 0) {
                         this.dialog = false;
                         this.show = true;
                     } else {
@@ -262,7 +498,10 @@ export default {
                         this.showerr = true;
                     }
                 })
-                .catch((error) => console.log(error));
+                .catch((error) => {
+                    console.log(error);
+                    alert('Invalid request');
+                });
         },
     },
 };
@@ -276,6 +515,11 @@ export default {
 #map {
     width: 40vw;
     height: 80vh;
+    border-radius: 3rem;
+}
+#mobileMap {
+    width: 80vw;
+    height: 50vh;
     border-radius: 3rem;
 }
 </style>

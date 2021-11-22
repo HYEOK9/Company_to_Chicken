@@ -8,11 +8,10 @@ const express = require('express');
 const app = express();
 const axios = require('axios');
 var cors = require('cors');
-var httpPort = 3000;
 // var path = require('path');
 // var router = express.Router();
 //axios 사용해서 훨씬 보기좋게 다시만들기.
-https: app.use(cors());
+app.use(cors());
 app.options('*', cors());
 
 app.get('/:lat/:long', async (req, res) => {
@@ -31,7 +30,7 @@ app.get('/:lat/:long', async (req, res) => {
     }
 });
 
-// function : get code of address with lat, long
+// function : get code of address with latitude, longitude
 // param : float -> lat, float -> long
 // 반경 100미터 이내에 아무 상점을 가져오고, 거기서 정보를 추출함.
 // 지역명(좌표기준) signguNm
@@ -40,7 +39,7 @@ app.get('/:lat/:long', async (req, res) => {
 // population   population
 async function get_n_store(lat, long) {
     let start = new Date();
-    console.log('start sending...');
+    console.log("start sending...")
     var result = {};
     function encode(params) {
         var result = '';
@@ -104,7 +103,6 @@ async function get_n_store(lat, long) {
     });
     var pop_result = await axios.get(pop_url + pop_param);
     var population = pop_result.data['result'][0]['tot_ppltn'];
-
     // conver lat, long to address
     var url = 'http://apis.data.go.kr/B553077/api/open/sdsc2/storeZoneInRadius';
     var queryParams = encode({
@@ -117,6 +115,7 @@ async function get_n_store(lat, long) {
     var store = await axios.get(url + queryParams);
     var signguCd = store.data['body']['items'][0]['signguCd'];
     var signguNm = store.data['body']['items'][0]['signguNm'];
+
     for (var temp in store.data['body']['items']) {
         if (store.data['body']['items'][temp]['signguNm'] == sgg_nm) {
             signguNm = sgg_nm;
@@ -126,14 +125,15 @@ async function get_n_store(lat, long) {
         }
     }
     console.log(signguCd, signguNm);
-    //with store_class_code and address
+    // with store_class_code and address
     // get number of store_class_code store
+    // this api is really slow... TODO : making database for improve speed of this step
     var class_code = 'Q05A08';
     var url2 = 'http://apis.data.go.kr/B553077/api/open/sdsc2/storeListInDong';
     var queryParams2 = encode({
         serviceKey: decodeURIComponent(serviceKey),
         pageNo: '1',
-        numOfRows: '10',
+        numOfRows: '1',
         divId: 'signguCd',
         key: signguCd,
         indsLclsCd: class_code.slice(0, 1),
@@ -149,13 +149,15 @@ async function get_n_store(lat, long) {
     result['sgg_nm'] = sgg_nm;
     result['population'] = population;
     let end = new Date();
+
     result['processing_time'] = end - start;
     return result;
 }
 
 app.listen(3000, () => {
-    console.log('Server listening on: http://localhost:%s', httpPort);
+    console.log('Server listening on : htp://localost:3000');
 });
+
 // router.get('*', (req, res) => {
 //     res.sendFile(path.join(__dirname, '/frontend/public', 'index.html'));
 // });
