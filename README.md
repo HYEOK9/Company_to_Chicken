@@ -11,17 +11,18 @@
 ## **Built with**
 
 -   FrontEnd
-    -   Vanilla JS
+    -   JS
     -   [Vue.js](https://vuejs.org/)
-    -   [bootstrap](https://getbootstrap.com/)
+    -   [vuetify](https://vuetifyjs.com/en/)
 -   BackEnd
     -   [Node.js](https://nodejs.org/en/)
 
 ---
 
-## **License**
+## **Open api**
 
--   See LICENSE.txt for more information.
+-   [Kakaomap](https://developers.kakao.com/product/map)
+-   [상권정보(공공데이터)](https://www.data.go.kr/data/15012005/openapi.do)
 
 ---
 
