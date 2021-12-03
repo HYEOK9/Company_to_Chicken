@@ -4,10 +4,16 @@
         "commonjs": true,
         "es2021": true
     },
-    "extends": ["plugin:vue/essential", "google"],
+    "extends": [
+        "plugin:vue/essential",
+        "google"
+    ],
     "parserOptions": {
-        "ecmaVersion": 6
+        "ecmaVersion": 13
     },
-    "plugins": ["vue"],
-    "rules": {}
+    "plugins": [
+        "vue"
+    ],
+    "rules": {
+    }
 }

@@ -338,7 +338,7 @@
                                                         <br /><br />
                                                         <span
                                                             >여기에 차리면
-                                                            안됩니다ㅠㅠ</span
+                                                            안됩니다<br />ㅠㅠ</span
                                                         >
                                                     </div>
                                                 </v-card-text>
