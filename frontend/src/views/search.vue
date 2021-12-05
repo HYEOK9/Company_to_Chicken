@@ -376,7 +376,7 @@ export default {
     data() {
         return {
             map: null,
-            appkey: 'b538a1ec39e03ceb8d52b0d35bc01656',
+            appkey: '',
             lat: 37.5666805,
             lng: 126.9784147,
             keyword: '',
@@ -391,13 +391,16 @@ export default {
         if (window.kakao && window.kakao.maps) {
             this.initMap();
         } else {
-            const script = document.createElement('script');
-            script.onload = () => kakao.maps.load(this.initMap);
-            script.src =
-                'http://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
-                this.appkey +
-                '&libraries=services';
-            document.head.appendChild(script);
+            axios.get('http://3.36.188.57:3000/load').then((res) => {
+                this.appkey = res.data;
+                const script = document.createElement('script');
+                script.onload = () => kakao.maps.load(this.initMap);
+                script.src =
+                    'http://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
+                    this.appkey +
+                    '&libraries=services';
+                document.head.appendChild(script);
+            });
         }
     },
     methods: {

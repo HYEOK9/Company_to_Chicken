@@ -1,5 +1,6 @@
 const fs = require('fs');
 const buffer = fs.readFileSync('./credentials.txt');
+const kakaomapKey = fs.readFileSync('./kakaokey.txt').toString();
 var temp_str = buffer.toString().split('\n');
 const serviceKey = temp_str[0];
 const sgis_key = temp_str[1];
@@ -12,7 +13,9 @@ var port = 3000;
 
 app.use(cors());
 app.options('*', cors());
-
+app.get('/load', (req, res) => {
+    res.send(kakaomapKey);
+});
 app.get('/:lat/:long', async (req, res) => {
     var result = {};
     try {
