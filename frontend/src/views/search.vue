@@ -485,7 +485,7 @@ export default {
         },
         async get_store() {
             this.dialog = true;
-            axios
+            await axios
                 .get('http://3.36.188.57:3000/' + this.lat + '/' + this.lng)
                 .then((response) => {
                     let res = response;
